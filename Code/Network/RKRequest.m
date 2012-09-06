@@ -360,9 +360,12 @@ RKRequestMethod RKRequestMethodFromString(NSString *methodName) {
             parameters = [(RKParams *)self.params dictionaryOfPlainTextParams];
         else
             parameters = [_URL queryParameters];
-        
+
+	    // Use CFURLCopyPath so that the path is preserved with trailing slash, then escape the percents ourselves
+		NSString *pathWithPrevervedTrailingSlash = [CFBridgingRelease(CFURLCopyPath((CFURLRef)_URL)) stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
         NSString *methodString = RKStringFromRequestMethod(self.method);        
-        echo = [GCOAuth URLRequestForPath:[_URL path] 
+        echo = [GCOAuth URLRequestForPath:pathWithPrevervedTrailingSlash 
                                HTTPMethod:methodString 
                                parameters:(self.method == RKRequestMethodGET) ? [_URL queryParameters] : parameters 
                                    scheme:[_URL scheme] 
@@ -371,6 +374,7 @@ RKRequestMethod RKRequestMethodFromString(NSString *methodName) {
                            consumerSecret:self.OAuth1ConsumerSecret 
                               accessToken:self.OAuth1AccessToken 
                               tokenSecret:self.OAuth1AccessTokenSecret];
+
         [_URLRequest setValue:[echo valueForHTTPHeaderField:@"Authorization"] forHTTPHeaderField:@"Authorization"];
         [_URLRequest setValue:[echo valueForHTTPHeaderField:@"Accept-Encoding"] forHTTPHeaderField:@"Accept-Encoding"];
         [_URLRequest setValue:[echo valueForHTTPHeaderField:@"User-Agent"] forHTTPHeaderField:@"User-Agent"];
