@@ -145,7 +145,7 @@
 
     NSError *error = nil;
     __persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
-    if (![__persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
+    if (![__persistentStoreCoordinator addPersistentStoreWithType:[__persistentStoreCoordinator NSSQLiteStoreType] configuration:nil URL:storeURL options:nil error:&error])
     {
         /*
          Replace this implementation with code to handle the error appropriately.
