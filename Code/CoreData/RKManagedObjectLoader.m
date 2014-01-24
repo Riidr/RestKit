@@ -253,7 +253,9 @@
         }
         
         [self.privateContext performBlockAndWait:^{
-            success = [self.privateContext save:&error];
+            NSError* localError = nil;
+            success = [self.privateContext save:&localError];
+            error = [localError copy];
         }];
         if (! success) {
             RKLogError(@"Failed to save managed object context after mapping completed: %@", [error localizedDescription]);
