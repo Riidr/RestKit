@@ -19,22 +19,23 @@
 //
 
 #import "RKLog.h"
-#import "lcl.h"
 
-int RKLogLevelForString(NSString *, NSString *);
+// Hook into Objective-C runtime to configure logging when we are loaded
+@interface RKLogInitializer : NSObject
+@end
 
-static BOOL loggingInitialized = NO;
+@implementation RKLogInitializer
 
-void RKLogInitialize(void)
++ (void)load
 {
-    if (loggingInitialized == NO) {
-        lcl_configure_by_name("RestKit*", RKLogLevelDefault);
-        lcl_configure_by_name("App", RKLogLevelDefault);
-        RKLogInfo(@"RestKit initialized...");
-        loggingInitialized = YES;
-    }
+    RKlcl_configure_by_name("RestKit*", RKLogLevelDefault);
+    RKlcl_configure_by_name("App", RKLogLevelDefault);
+    RKLogInfo(@"RestKit logging initialized...");
 }
 
+@end
+
+int RKLogLevelForString(NSString *, NSString *);
 
 void RKLogConfigureFromEnvironment(void)
 {
@@ -108,38 +109,6 @@ int RKLogLevelForString(NSString *logLevel, NSString *envVarName)
     }
 }
 
-void RKLogValidationError(NSError *error)
-{
-    if ([[error domain] isEqualToString:@"NSCocoaErrorDomain"]) {
-        NSDictionary *userInfo = [error userInfo];
-        NSArray *errors = [userInfo valueForKey:@"NSDetailedErrors"];
-        if (errors) {
-            for (NSError *detailedError in errors) {
-                NSDictionary *subUserInfo = [detailedError userInfo];
-                RKLogError(@"Detailed Error\n \
-                           NSLocalizedDescription:\t\t%@\n \
-                           NSValidationErrorKey:\t\t\t%@\n \
-                           NSValidationErrorPredicate:\t%@\n \
-                           NSValidationErrorObject:\n%@\n",
-                           [subUserInfo valueForKey:@"NSLocalizedDescription"],
-                           [subUserInfo valueForKey:@"NSValidationErrorKey"],
-                           [subUserInfo valueForKey:@"NSValidationErrorPredicate"],
-                           [subUserInfo valueForKey:@"NSValidationErrorObject"]);
-            }
-        } else {
-            RKLogError(@"Validation Error\n \
-                       NSLocalizedDescription:\t\t%@\n \
-                       NSValidationErrorKey:\t\t\t%@\n \
-                       NSValidationErrorPredicate:\t%@\n \
-                       NSValidationErrorObject:\n%@\n",
-                       [userInfo valueForKey:@"NSLocalizedDescription"],
-                       [userInfo valueForKey:@"NSValidationErrorKey"],
-                       [userInfo valueForKey:@"NSValidationErrorPredicate"],
-                       [userInfo valueForKey:@"NSValidationErrorObject"]);
-        }
-    }
-}
-
 void RKLogIntegerAsBinary(NSUInteger bitMask)
 {
     NSUInteger bit = ~(NSUIntegerMax >> 1);
@@ -147,13 +116,51 @@ void RKLogIntegerAsBinary(NSUInteger bitMask)
     do {
         [string appendString:(((NSUInteger)bitMask & bit) ? @"1" : @"0")];
     } while (bit >>= 1);
-
+    
     NSLog(@"Value of %ld in binary: %@", (long)bitMask, string);
 }
 
+void RKLogValidationError(NSError *error)
+{
+#ifdef _COREDATADEFINES_H    
+    if ([[error domain] isEqualToString:@"NSCocoaErrorDomain"]) {
+        NSDictionary *userInfo = [error userInfo];
+        NSArray *errors = [userInfo valueForKey:@"NSDetailedErrors"];
+        if (errors) {
+            for (NSError *detailedError in errors) {
+                NSDictionary *subUserInfo = [detailedError userInfo];
+                RKLogError(@"Detailed Error\n \
+                           NSLocalizedDescriptionKey:\t\t%@\n \
+                           NSValidationKeyErrorKey:\t\t\t%@\n \
+                           NSValidationPredicateErrorKey:\t%@\n \
+                           NSValidationObjectErrorKey:\n%@\n",
+                           [subUserInfo valueForKey:NSLocalizedDescriptionKey],
+                           [subUserInfo valueForKey:NSValidationKeyErrorKey],
+                           [subUserInfo valueForKey:NSValidationPredicateErrorKey],
+                           [subUserInfo valueForKey:NSValidationObjectErrorKey]);
+            }
+        } else {
+            RKLogError(@"Validation Error\n \
+                       NSLocalizedDescriptionKey:\t\t%@\n \
+                       NSValidationKeyErrorKey:\t\t\t%@\n \
+                       NSValidationPredicateErrorKey:\t%@\n \
+                       NSValidationObjectErrorKey:\n%@\n",
+                       [userInfo valueForKey:NSLocalizedDescriptionKey],
+                       [userInfo valueForKey:NSValidationKeyErrorKey],
+                       [userInfo valueForKey:NSValidationPredicateErrorKey],
+                       [userInfo valueForKey:NSValidationObjectErrorKey]);
+        }
+    }
+#else
+    RKLogError(@"Validation Error: %@ (userInfo: %@)", error, [error userInfo]);
+#endif
+}
+
+#ifdef _COREDATADEFINES_H
 void RKLogCoreDataError(NSError *error)
 {
-    RKLogToComponentWithLevelWhileExecutingBlock(lcl_cRestKitCoreData, RKLogLevelError, ^{
+    RKLogToComponentWithLevelWhileExecutingBlock(RKlcl_cRestKitCoreData, RKLogLevelError, ^{
         RKLogValidationError(error);
     });
 }
+#endif

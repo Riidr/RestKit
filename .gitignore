@@ -18,7 +18,18 @@ Docs/API
 *.pbxuser
 *.perspectivev3
 *.xcuserdatad
+*.xccheckout
 
 Examples/RKDiscussionBoardExample/discussion_board_backend/public/system/attachments/*
 
 test-reports/
+
+# CocoaPods
+Pods
+RestKit.xcodeproj/xcshareddata/
+RestKit.xcworkspace/xcshareddata/xcschemes/
+DerivedData
+
+# Bundler binstubs
+.bundle
+bin

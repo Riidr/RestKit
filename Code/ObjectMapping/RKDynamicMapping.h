@@ -19,78 +19,97 @@
 //
 
 #import "RKMapping.h"
-#import "RKObjectMapping.h"
+#import "RKObjectMappingMatcher.h"
 
 /**
- Return the appropriate object mapping given a mappable data
+ The `RKDynamicMapping` class is an `RKMapping` subclass that provides an interface for deferring the decision about how a given object representation is to be mapped until run time. This enables many interesting mapping strategies, such as mapping similarly structured data differently and constructing object mappings at run time by examining the data being mapped.
+
+ ## Configuring Mapping Selection
+
+ Dynamic mappings support the selection of the concrete object mapping in one of two ways:
+
+ 1. Through the use of a mapping selection block configured by `setObjectMappingForRepresentationBlock:`. When configured, the block is called with a reference to the current object representation being mapped and is expected to return an `RKObjectMapping` object. Returning `nil` declines the mapping of the representation.
+ 1. Through the configuration of one of more `RKObjectMappingMatcher` objects. The matchers are consulted in registration order and the first matcher to return an object mapping is used to map the matched representation.
+
+ When both a mapping selection block and matchers are configured on a `RKDynamicMapping` object, the matcher objects are consulted first and if none match, the selection block is invoked.
+
+ ## Using Matcher Objects
+
+ The `RKObjectMappingMatcher` class provides an interface for evaluating a key path or predicate based match and returning an appropriate object mapping. Matchers can be added to the `RKDynamicMapping` objects to declaratively describe a particular mapping strategy.
+
+ For example, suppose that we have a JSON fragment for a person that we want to map differently based on the gender of the person. When the gender is 'male', we want to use the Boy class and when then the gender is 'female' we want to use the Girl class. The JSON might look something like this:
+
+    [ { "name": "Blake", "gender": "male" }, { "name": "Sarah", "gender": "female" } ]
+
+ We might define configure the dynamic mapping like so:
+
+    RKDynamicMapping *mapping = [RKDynamicMapping new];
+    RKObjectMapping *boyMapping = [RKObjectMapping mappingForClass:[Boy class]];
+    RKObjectMapping *girlMapping = [RKObjectMapping mappingForClass:[Girl class]];
+    [mapping addMatcher:[RKObjectMappingMatcher matcherWithKeyPath:@"gender" expectedValue:@"male" objectMapping:boyMapping]];
+    [mapping addMatcher:[RKObjectMappingMatcher matcherWithKeyPath:@"gender" expectedValue:@"female" objectMapping:girlMapping]];
+
+ When evaluated, the matchers will invoke `valueForKeyPath:@"gender"` against each dictionary in the array of object representations and apply the appropriate object mapping for each representation. This would return a mapping result containing an array of two objects, one an instance of the `Boy` class and the other an instance of the `Girl` class.
+
+ ## HTTP Integration
+
+ Dynamic mappings can be used to map HTTP requests and responses by adding them to an `RKRequestDescriptor` or `RKResponseDescriptor` objects.
  */
-@protocol RKDynamicMappingDelegate <NSObject>
+@interface RKDynamicMapping : RKMapping
 
-@required
-- (RKObjectMapping *)objectMappingForData:(id)data;
-
-@end
-
-#ifdef NS_BLOCKS_AVAILABLE
-typedef RKObjectMapping *(^RKDynamicMappingDelegateBlock)(id);
-#endif
+///------------------------------------------
+/// @name Configuring Block Mapping Selection
+///------------------------------------------
 
 /**
- Defines a dynamic object mapping that determines the appropriate concrete
- object mapping to apply at mapping time. This allows you to map very similar payloads
- differently depending on the type of data contained therein.
+ Sets a block to be invoked to determine the appropriate concrete object mapping with which to map an object representation.
+
+ @param block The block object to invoke to select the object mapping with which to map the given object representation. The block returns an object mapping and accepts a single parameter: the object representation being mapped.
  */
-@interface RKDynamicMapping : RKMapping {
-    NSMutableArray *_matchers;
-}
+- (void)setObjectMappingForRepresentationBlock:(RKObjectMapping *(^)(id representation))block;
 
 /**
- A delegate to call back to determine the appropriate concrete object mapping
- to apply to the mappable data.
-
- @see RKDynamicMappingDelegate
+ Returns the array of matchers objects added to the receiver.
  */
-@property (nonatomic, assign) id<RKDynamicMappingDelegate> delegate;
-
-#ifdef NS_BLOCKS_AVAILABLE
-/**
- A block to invoke to determine the appropriate concrete object mapping
- to apply to the mappable data.
- */
-@property (nonatomic, copy) RKDynamicMappingDelegateBlock objectMappingForDataBlock;
-#endif
+@property (nonatomic, strong, readonly) NSArray *matchers;
 
 /**
- Return a new auto-released dynamic object mapping
+ Adds a matcher to the receiver.
+
+ If the matcher has already been added to the receiver, then adding it again moves it to the top of the matcher stack.
+
+ @param matcher The matcher to add to the receiver.
  */
-+ (RKDynamicMapping *)dynamicMapping;
+- (void)addMatcher:(RKObjectMappingMatcher *)matcher;
 
 /**
- Defines a dynamic mapping rule stating that when the value of the key property matches the specified
- value, the objectMapping should be used.
+ Removes a matcher from the receiver.
 
- For example, suppose that we have a JSON fragment for a person that we want to map differently based on
- the gender of the person. When the gender is 'male', we want to use the Boy class and when then the gender
- is 'female' we want to use the Girl class. We might define our dynamic mapping like so:
+ If the matcher has already been added to the receiver, then adding it again moves it to the top of the matcher stack.
 
-    RKDynamicMapping *mapping = [RKDynamicMapping dynamicMapping];
-    [mapping setObjectMapping:boyMapping whenValueOfKeyPath:@"gender" isEqualTo:@"male"];
-    [mapping setObjectMapping:boyMapping whenValueOfKeyPath:@"gender" isEqualTo:@"female"];
+ @param matcher The matcher to remove from the receiver.
  */
-- (void)setObjectMapping:(RKObjectMapping *)objectMapping whenValueOfKeyPath:(NSString *)keyPath isEqualTo:(id)value;
+- (void)removeMatcher:(RKObjectMappingMatcher *)matcher;
 
 /**
- Invoked by the RKObjectMapper and RKObjectMappingOperation to determine the appropriate RKObjectMapping to use
- when mapping the specified dictionary of mappable data.
+ Returns an array of object mappings that have been registered with the receiver.
+ 
+ @return An array of `RKObjectMapping` objects registered with the receiver.
  */
-- (RKObjectMapping *)objectMappingForDictionary:(NSDictionary *)dictionary;
+@property (nonatomic, readonly) NSArray *objectMappings;
 
-@end
+///-----------------------------------------------------------------
+/// @name Retrieving the Object Mapping for an Object Representation
+///-----------------------------------------------------------------
 
 /**
- Define an alias for the old class name for compatibility
+ Invoked by the `RKMapperOperation` and `RKMappingOperation` to determine the appropriate `RKObjectMapping` to use when mapping the given object representation.
 
- @deprecated
+ This method searches the stack of registered matchers and then executes the block, if any, set by `setObjectMappingForRepresentationBlock:`. If `nil` is returned, then mapping for the representation is declined and it will not be mapped.
+
+ @param representation The object representation that being mapped dynamically for which to determine the appropriate concrete mapping.
+ @return The object mapping to be used to map the given object representation.
  */
-@interface RKObjectDynamicMapping : RKDynamicMapping
+- (RKObjectMapping *)objectMappingForRepresentation:(id)representation;
+
 @end

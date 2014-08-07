@@ -19,37 +19,43 @@
 //
 
 #import "RKRelationshipMapping.h"
+#import "RKMapping.h"
+
+@interface RKPropertyMapping ()
+@property (nonatomic, copy, readwrite) NSString *sourceKeyPath;
+@property (nonatomic, copy, readwrite) NSString *destinationKeyPath;
+@end
+
+@interface RKRelationshipMapping ()
+@property (nonatomic, strong, readwrite) RKMapping *mapping;
+@end
 
 @implementation RKRelationshipMapping
 
-@synthesize mapping = _mapping;
-@synthesize reversible = _reversible;
-
-+ (RKRelationshipMapping *)mappingFromKeyPath:(NSString *)sourceKeyPath toKeyPath:(NSString *)destinationKeyPath withMapping:(id)objectOrDynamicMapping reversible:(BOOL)reversible
++ (instancetype)relationshipMappingFromKeyPath:(NSString *)sourceKeyPath toKeyPath:(NSString *)destinationKeyPath withMapping:(RKMapping *)mapping
 {
-    RKRelationshipMapping *relationshipMapping = (RKRelationshipMapping *)[self mappingFromKeyPath:sourceKeyPath toKeyPath:destinationKeyPath];
-    relationshipMapping.reversible = reversible;
-    relationshipMapping.mapping = objectOrDynamicMapping;
+    RKRelationshipMapping *relationshipMapping = [self new];
+    relationshipMapping.sourceKeyPath = sourceKeyPath;
+    relationshipMapping.destinationKeyPath = destinationKeyPath;
+    relationshipMapping.mapping = mapping;
     return relationshipMapping;
 }
 
-+ (RKRelationshipMapping *)mappingFromKeyPath:(NSString *)sourceKeyPath toKeyPath:(NSString *)destinationKeyPath withMapping:(id)objectOrDynamicMapping
+- (id)init
 {
-    return [self mappingFromKeyPath:sourceKeyPath toKeyPath:destinationKeyPath withMapping:objectOrDynamicMapping reversible:YES];
+    self = [super init];
+    if (self) {
+        self.assignmentPolicy = RKSetAssignmentPolicy;
+    }
+    return self;
 }
 
 - (id)copyWithZone:(NSZone *)zone
 {
     RKRelationshipMapping *copy = [super copyWithZone:zone];
     copy.mapping = self.mapping;
-    copy.reversible = self.reversible;
+    copy.assignmentPolicy = self.assignmentPolicy;
     return copy;
-}
-
-- (void)dealloc
-{
-    [_mapping release];
-    [super dealloc];
 }
 
 - (BOOL)isEqualToMapping:(RKRelationshipMapping *)otherMapping

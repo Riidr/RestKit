@@ -19,93 +19,75 @@
 //
 
 #import "RKDynamicMapping.h"
-#import "RKDynamicMappingMatcher.h"
+#import "RKObjectMappingMatcher.h"
 #import "RKLog.h"
 
 // Set Logging Component
 #undef RKLogComponent
-#define RKLogComponent lcl_cRestKitObjectMapping
+#define RKLogComponent RKlcl_cRestKitObjectMapping
 
+@interface RKDynamicMapping ()
+@property (nonatomic, strong) NSMutableArray *mutableMatchers;
+@property (nonatomic, copy) RKObjectMapping *(^objectMappingForRepresentationBlock)(id representation);
+@end
 
 @implementation RKDynamicMapping
-
-@synthesize delegate = _delegate;
-@synthesize objectMappingForDataBlock = _objectMappingForDataBlock;
-
-+ (RKDynamicMapping *)dynamicMapping
-{
-    return [[self new] autorelease];
-}
-
-#if NS_BLOCKS_AVAILABLE
-
-+ (RKDynamicMapping *)dynamicMappingUsingBlock:(void(^)(RKDynamicMapping *))block
-{
-    RKDynamicMapping *mapping = [self dynamicMapping];
-    block(mapping);
-    return mapping;
-}
-
-+ (RKDynamicMapping *)dynamicMappingWithBlock:(void(^)(RKDynamicMapping *))block
-{
-    return [self dynamicMappingUsingBlock:block];
-}
-
-#endif
 
 - (id)init
 {
     self = [super init];
     if (self) {
-        _matchers = [NSMutableArray new];
+        self.mutableMatchers = [NSMutableArray new];
     }
 
     return self;
 }
 
-- (void)dealloc
+- (NSArray *)matchers
 {
-    [_matchers release];
-    [super dealloc];
+    return [self.mutableMatchers copy];
 }
 
-- (void)setObjectMapping:(RKObjectMapping *)objectMapping whenValueOfKeyPath:(NSString *)keyPath isEqualTo:(id)value
+- (NSArray *)objectMappings
 {
-    RKLogDebug(@"Adding dynamic object mapping for key '%@' with value '%@' to destination class: %@", keyPath, value, NSStringFromClass(objectMapping.objectClass));
-    RKDynamicMappingMatcher *matcher = [[RKDynamicMappingMatcher alloc] initWithKey:keyPath value:value objectMapping:objectMapping];
-    [_matchers addObject:matcher];
-    [matcher release];
+    return [self.mutableMatchers valueForKey:@"objectMapping"];
 }
 
-- (RKObjectMapping *)objectMappingForDictionary:(NSDictionary *)data
+- (void)addMatcher:(RKObjectMappingMatcher *)matcher
 {
-    NSAssert([data isKindOfClass:[NSDictionary class]], @"Dynamic object mapping can only be performed on NSDictionary mappables, got %@", NSStringFromClass([data class]));
+    NSParameterAssert(matcher);
+    if ([self.mutableMatchers containsObject:matcher]) {
+        [self.mutableMatchers removeObject:matcher];
+        [self.mutableMatchers insertObject:matcher atIndex:0];
+    } else {
+        [self.mutableMatchers addObject:matcher];
+    }
+}
+
+- (void)removeMatcher:(RKObjectMappingMatcher *)matcher
+{
+    NSParameterAssert(matcher);
+    [self.mutableMatchers removeObject:matcher];
+}
+
+- (RKObjectMapping *)objectMappingForRepresentation:(id)representation
+{
     RKObjectMapping *mapping = nil;
 
-    RKLogTrace(@"Performing dynamic object mapping for mappable data: %@", data);
+    RKLogTrace(@"Performing dynamic object mapping for object representation: %@", representation);
 
     // Consult the declarative matchers first
-    for (RKDynamicMappingMatcher *matcher in _matchers) {
-        if ([matcher isMatchForData:data]) {
-            RKLogTrace(@"Found declarative match for data: %@.", [matcher matchDescription]);
+    for (RKObjectMappingMatcher *matcher in self.mutableMatchers) {
+        if ([matcher matches:representation]) {
+            RKLogTrace(@"Found declarative match for matcher: %@.", matcher);
             return matcher.objectMapping;
         }
     }
 
-    // Otherwise consult the delegates
-    if (self.delegate) {
-        mapping = [self.delegate objectMappingForData:data];
-        if (mapping) {
-            RKLogTrace(@"Found dynamic delegate match. Delegate = %@", self.delegate);
-            return mapping;
-        }
-    }
-
-    if (self.objectMappingForDataBlock) {
-        mapping = self.objectMappingForDataBlock(data);
-        if (mapping) {
-            RKLogTrace(@"Found dynamic delegateBlock match. objectMappingForDataBlock = %@", self.objectMappingForDataBlock);
-        }
+    // Otherwise consult the block
+    if (self.objectMappingForRepresentationBlock) {
+        mapping = self.objectMappingForRepresentationBlock(representation);
+        if (mapping) RKLogTrace(@"Determined concrete `RKObjectMapping` using object mapping for representation block");
     }
 
     return mapping;
@@ -113,12 +95,7 @@
 
 - (BOOL)isEqualToMapping:(RKMapping *)otherMapping
 {
-    // Comparison of dynamic mappings is not currently supported
-    return NO;
+    return (self == otherMapping);
 }
 
-@end
-
-// Compatibility alias...
-@implementation RKObjectDynamicMapping
 @end

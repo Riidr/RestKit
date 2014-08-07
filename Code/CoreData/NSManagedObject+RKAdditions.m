@@ -10,14 +10,8 @@
 #import "NSManagedObjectContext+RKAdditions.h"
 #import "RKLog.h"
 #import "RKManagedObjectStore.h"
-#import "NSEntityDescription+RKAdditions.h"
 
 @implementation NSManagedObject (RKAdditions)
-
-- (RKManagedObjectStore *)managedObjectStore
-{
-    return self.managedObjectContext.managedObjectStore;
-}
 
 - (BOOL)hasBeenDeleted
 {

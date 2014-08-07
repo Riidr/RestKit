@@ -17,7 +17,8 @@
     RKLogConfigureByName("RestKit/Search", RKLogLevelTrace);
     
     // Initialize the managed object store
-    NSManagedObjectModel *managedObjectModel = [NSManagedObjectModel mergedModelFromBundles:nil];
+    // NOTE: To add search indexing an entity, the managed object model must be mutable. The `mergedModelFromBundles:` method returns an immutable model, so we must send a `mutableCopy` message to obtain a model that we can add indexing to.
+    NSManagedObjectModel *managedObjectModel = [[NSManagedObjectModel mergedModelFromBundles:nil] mutableCopy];
     RKManagedObjectStore *managedObjectStore = [[RKManagedObjectStore alloc] initWithManagedObjectModel:managedObjectModel];
     
     // Configure the Contact entity for mapping
@@ -27,7 +28,8 @@
      @"last_name": @"lastName",
      @"email_adddress": @"emailAddress",
      @"phone_number": @"phoneNumber",
-     @"notes": @"notes" }];        
+     @"notes": @"notes"
+     }];
     
     // Configure search indexing
     [managedObjectStore addSearchIndexingToEntityForName:@"Contact"
@@ -46,7 +48,7 @@
     NSAssert(count != NSNotFound, @"Failed to import contacts at path '%@': %@", pathToDataFile, error);
     
     // Index the imported objects
-    [managedObjectStore.searchIndexer indexChangedObjectsInManagedObjectContext:importer.managedObjectContext];
+    [managedObjectStore.searchIndexer indexChangedObjectsInManagedObjectContext:importer.managedObjectContext waitUntilFinished:YES];
     BOOL success = [importer finishImporting:&error];
     NSAssert(success, @"Failed to finish import operation: %@", error);
     
