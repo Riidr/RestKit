@@ -15,4 +15,4 @@
 	url = https://github.com/NimbusKit/sockit.git
 [submodule "Vendor/AFXAuthClient"]
 	path = Vendor/AFXAuthClient
-	url = https://github.com/Riidr/AFXAuthClient.git
+	url = https://github.com/romaonthego/AFXAuthClient.git
