@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		233940F42020B3870049132C /* AFXAuthClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 233940F32020B3870049132C /* AFXAuthClient.m */; };
+		233940F52020B5020049132C /* AFXAuthClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 233940F32020B3870049132C /* AFXAuthClient.m */; };
+		233940F62020B50E0049132C /* AFXAuthClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 233940F22020B3870049132C /* AFXAuthClient.h */; };
 		2502C8ED15F79CF70060FD75 /* CoreData.h in Headers */ = {isa = PBXBuildFile; fileRef = 2502C8E715F79CF70060FD75 /* CoreData.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2502C8EE15F79CF70060FD75 /* CoreData.h in Headers */ = {isa = PBXBuildFile; fileRef = 2502C8E715F79CF70060FD75 /* CoreData.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2502C8EF15F79CF70060FD75 /* Network.h in Headers */ = {isa = PBXBuildFile; fileRef = 2502C8E815F79CF70060FD75 /* Network.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -641,6 +644,8 @@
 		04D69B4B2A54475834B333CF /* Pods-osx.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-osx.release.xcconfig"; path = "Pods/Target Support Files/Pods-osx/Pods-osx.release.xcconfig"; sourceTree = "<group>"; };
 		061E3E4524CE8EF78257C26C /* Pods-ios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.release.xcconfig"; path = "Pods/Target Support Files/Pods-ios/Pods-ios.release.xcconfig"; sourceTree = "<group>"; };
 		147F950728350A64F103F55D /* Pods-ios.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ios/Pods-ios.debug.xcconfig"; sourceTree = "<group>"; };
+		233940F22020B3870049132C /* AFXAuthClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFXAuthClient.h; sourceTree = "<group>"; };
+		233940F32020B3870049132C /* AFXAuthClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFXAuthClient.m; sourceTree = "<group>"; };
 		2501405215366000004E0466 /* RKObjectiveCppTest.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RKObjectiveCppTest.mm; sourceTree = "<group>"; };
 		2502C8E715F79CF70060FD75 /* CoreData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreData.h; sourceTree = "<group>"; };
 		2502C8E815F79CF70060FD75 /* Network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Network.h; sourceTree = "<group>"; };
@@ -1055,6 +1060,16 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		233940F12020B3870049132C /* AFXAuthClient */ = {
+			isa = PBXGroup;
+			children = (
+				233940F22020B3870049132C /* AFXAuthClient.h */,
+				233940F32020B3870049132C /* AFXAuthClient.m */,
+			);
+			name = AFXAuthClient;
+			path = AFXAuthClient/AFXAuthClient;
+			sourceTree = "<group>";
+		};
 		25104F0E15C30C7900829135 /* Search */ = {
 			isa = PBXGroup;
 			children = (
@@ -1282,6 +1297,7 @@
 		25160E8D145652E40060A5C5 /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
+				233940F12020B3870049132C /* AFXAuthClient */,
 				252CCE6D17E0CA2700B7F0BF /* ISO8601DateFormatterValueTransformer */,
 				252CCE5D17E08E2D00B7F0BF /* RKValueTransformers */,
 				25C6C0A21716F6F800C98A73 /* TransitionKit */,
@@ -1878,6 +1894,7 @@
 				25C6C0C51716F6F800C98A73 /* TKStateMachine.h in Headers */,
 				25C6C0CB1716F6F800C98A73 /* TransitionKit.h in Headers */,
 				25C6C0E81716F79B00C98A73 /* RKOperationStateMachine.h in Headers */,
+				233940F62020B50E0049132C /* AFXAuthClient.h in Headers */,
 				25DA356F1836741D001A56A0 /* TKTransition.h in Headers */,
 				54CDB45B17B408B100FAC285 /* RKStringTokenizer.h in Headers */,
 			);
@@ -2264,6 +2281,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				233940F52020B5020049132C /* AFXAuthClient.m in Sources */,
 				253B495F14E35EC300B0483F /* RKTestFixture.m in Sources */,
 				25160DDC145650490060A5C5 /* RKEntityMapping.m in Sources */,
 				25160DE0145650490060A5C5 /* RKManagedObjectImporter.m in Sources */,
@@ -2377,6 +2395,7 @@
 				251610F01456F2340060A5C5 /* RKTestEnvironment.m in Sources */,
 				2516110E1456F2340060A5C5 /* RKURLEncodedSerializationTest.m in Sources */,
 				251611101456F2340060A5C5 /* NSStringRestKitTest.m in Sources */,
+				233940F42020B3870049132C /* AFXAuthClient.m in Sources */,
 				251611121456F2340060A5C5 /* RKDotNetDateFormatterTest.m in Sources */,
 				251611161456F2340060A5C5 /* RKPathMatcherTest.m in Sources */,
 				25B6E9DB14CF912500B1E881 /* RKSearchable.m in Sources */,
@@ -2613,6 +2632,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -2651,6 +2671,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
@@ -2673,6 +2694,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
+				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Code/Support/RestKit-Prefix.pch";
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
@@ -2691,6 +2713,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
+				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Code/Support/RestKit-Prefix.pch";
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
