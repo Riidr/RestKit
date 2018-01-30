@@ -1,0 +1,18 @@
+[submodule "Vendor/RKValueTransformers"]
+	path = Vendor/RKValueTransformers
+	url = https://github.com/RestKit/RKValueTransformers.git
+[submodule "Vendor/ISO8601DateFormatterValueTransformer"]
+	path = Vendor/ISO8601DateFormatterValueTransformer
+	url = https://github.com/blakewatters/ISO8601DateFormatterValueTransformer.git
+[submodule "Vendor/AFNetworking"]
+	path = Vendor/AFNetworking
+	url = https://github.com/AFNetworking/AFNetworking.git
+[submodule "Vendor/NimbusKit"]
+	path = Vendor/NimbusKit
+	url = https://github.com/NimbusKit/sockit.git
+[submodule "Vendor/TransitionKit"]
+	path = Vendor/TransitionKit
+	url = https://github.com/blakewatters/TransitionKit.git
+[submodule "Vendor/AFXAuthClient"]
+	path = Vendor/AFXAuthClient
+	url = https://github.com/romaonthego/AFXAuthClient.git
